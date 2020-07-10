@@ -140,7 +140,7 @@ class HashTable:
                 prev.next = prev.next.next  # LinkedList delete by skipping over
 
             # Check the load factor, if smaller than 0.2, resize table by half
-            if self.get_load_factor() <= 0.2 and self.capacity // 2 >= 8:
+            if self.get_load_factor() <= 0.2 and self.capacity // 2 >= MIN_CAPACITY:
                 self.resize(self.capacity // 2)
             # Return the deleted result
             return result
