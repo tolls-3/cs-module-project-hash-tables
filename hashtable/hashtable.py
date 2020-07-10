@@ -138,9 +138,16 @@ class HashTable:
             result = node.value
             # Delete this element in linked list
             if prev is None:
+                # If this is the only node in the bucket
+                if node.next is None:
+                    self.occupied_indices -= 1
                 self.indices[index] = node.next  # May be None, or the next match
             else:
                 prev.next = prev.next.next  # LinkedList delete by skipping over
+
+            # Check the load factor, if smaller than 0.2, resize table by half
+            if self.get_load_factor() <= 0.2:
+                self.resize(self.capacity // 2)
             # Return the deleted result
             return result
 
