@@ -2,6 +2,7 @@ class HashTableEntry:
     """
     Linked List hash table key/value pair
     """
+
     def __init__(self, key, value):
         self.key = key
         self.value = value
@@ -22,7 +23,12 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        if capacity < MIN_CAPACITY:
+            self.capacity = MIN_CAPACITY
+        else:
+            self.capacity = capacity
 
+        self.storage = [None]*self.capacity
 
     def get_num_slots(self):
         """
@@ -35,7 +41,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
+        return len(self.storage)
 
     def get_load_factor(self):
         """
@@ -45,7 +51,6 @@ class HashTable:
         """
         # Your code here
 
-
     def fnv1(self, key):
         """
         FNV-1 Hash, 64-bit
@@ -54,7 +59,15 @@ class HashTable:
         """
 
         # Your code here
+        FNV_OFFSET_BASIS = 0xcbf29ce484222325
+        FNV_PRIME = 0x100000001b3
 
+        hash = FNV_OFFSET_BASIS
+
+        for c in key:
+            hash = hash * FNV_PRIME
+            hash = hash ^ ord(c)
+        return hash
 
     def djb2(self, key):
         """
@@ -64,14 +77,14 @@ class HashTable:
         """
         # Your code here
 
-
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        # make use of the Fowler–Noll–Vo_hash_function and
+        return self.fnv1(key) % self.capacity
+        # return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -81,8 +94,11 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # hash the key with hash_index function
+        key_index = self.hash_index(key)
 
+        # store the key and value in the computed index
+        self.storage[key_index] = HashTableEntry(key, value)
 
     def delete(self, key):
         """
@@ -94,6 +110,15 @@ class HashTable:
         """
         # Your code here
 
+        # Again hash key to get index
+        key_index = self.hash_index(key)
+
+        # check if found, then delete the key and value at index above
+        if self.storage[key_index] == None:
+            print(f'This key and value is not stored')
+        else:
+            self.storage[key_index] = None
+            print(f'Success removing key and value from storage')
 
     def get(self, key):
         """
@@ -105,6 +130,14 @@ class HashTable:
         """
         # Your code here
 
+        # get the index of key by hashing the key
+        key_index = self.hash_index(key)
+
+        # return the value stored with the key at the index above
+        if self.storage[key_index] == None:
+            return None
+        else:
+            return self.storage[key_index].value
 
     def resize(self, new_capacity):
         """
@@ -114,7 +147,6 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
 
 
 if __name__ == "__main__":
