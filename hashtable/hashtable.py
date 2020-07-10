@@ -25,7 +25,6 @@ class HashTable:
         self.capacity = max(MIN_CAPACITY, capacity)
         self.indices = [None] * self.capacity
         self.size = 0
-        self.occupied_indices = 0
 
     def get_num_slots(self):
         """
@@ -45,7 +44,7 @@ class HashTable:
 
         Implement this.
         """
-        return self.occupied_indices / self.capacity
+        return self.size / self.capacity
 
     def fnv1(self, key):
         """
@@ -93,8 +92,6 @@ class HashTable:
         if node is None:
             # Create node, add it, return
             self.indices[index] = HashTableEntry(key, value)
-            # Increment count of non-null indices
-            self.occupied_indices += 1
             # check load factor, if above 0.7, resize table to double it's current size
             if self.get_load_factor() >= 0.7:
                 self.resize(self.capacity * 2)
@@ -138,9 +135,6 @@ class HashTable:
             result = node.value
             # Delete this element in linked list
             if prev is None:
-                # If this is the only node in the bucket
-                if node.next is None:
-                    self.occupied_indices -= 1
                 self.indices[index] = node.next  # May be None, or the next match
             else:
                 prev.next = prev.next.next  # LinkedList delete by skipping over
