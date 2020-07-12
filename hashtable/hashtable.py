@@ -8,6 +8,9 @@ class HashTableEntry:
         self.value = value
         self.next = None
 
+    def __str__(self):
+        print(f'{self.key}, {self.value}, {self.next}')
+
 
 # Hash table can't have fewer than this many slots
 MIN_CAPACITY = 8
@@ -25,10 +28,13 @@ class HashTable:
         # Your code here
         if capacity < MIN_CAPACITY:
             self.capacity = MIN_CAPACITY
+            # print(self.capacity)
         else:
             self.capacity = capacity
+            # print(self.capacity)
 
         self.storage = [None]*self.capacity
+        self.head = None
 
     def get_num_slots(self):
         """
@@ -82,8 +88,9 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        # make use of the Fowler–Noll–Vo_hash_function and
+        # make use of the Fowler–Noll–Vo_hash_function
         return self.fnv1(key) % self.capacity
+
         # return self.djb2(key) % self.capacity
 
     def put(self, key, value):
@@ -97,8 +104,30 @@ class HashTable:
         # hash the key with hash_index function
         key_index = self.hash_index(key)
 
-        # store the key and value in the computed index
-        self.storage[key_index] = HashTableEntry(key, value)
+        # create linked list new value
+        """
+        [None, None, None, None, None, None, None, None]
+        [3, ...., None]
+
+        """
+
+        node = self.storage[key_index]
+        new_value = HashTableEntry(key, value)
+
+        if node == None:
+            self.storage[key_index] = new_value
+            return
+
+        prev = node
+
+        while node != None:
+            if node.key == key:
+                node.value = value
+                return
+            else:
+                node = node.next
+
+        prev.next = new_value
 
     def delete(self, key):
         """
@@ -107,6 +136,13 @@ class HashTable:
         Print a warning if the key is not found.
 
         Implement this.
+
+        [None, None, None, None, None, None, None, None]
+        [3, 4, 5, ..., None]
+         |
+         56
+         |
+         43
         """
         # Your code here
 
@@ -114,11 +150,27 @@ class HashTable:
         key_index = self.hash_index(key)
 
         # check if found, then delete the key and value at index above
-        if self.storage[key_index] == None:
-            print(f'This key and value is not stored')
+
+        # self.storage[key_index] = None
+        node = self.storage[key_index]
+        prev = None
+
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+
+        if node is None:
+            return None
+
         else:
-            self.storage[key_index] = None
-            print(f'Success removing key and value from storage')
+            deleted_node = node.value
+            if prev is None:
+                self.storage[key_index] = node.next
+
+            else:
+                prev.next = node.next
+
+            return deleted_node
 
     def get(self, key):
         """
@@ -128,16 +180,26 @@ class HashTable:
 
         Implement this.
         """
+
+        """
+        [None, None, None, None, None, None, None, None]
+        [3, 4, 5, ..., None]
+
+        """
+
         # Your code here
 
         # get the index of key by hashing the key
         key_index = self.hash_index(key)
+        node = self.storage[key_index]
 
-        # return the value stored with the key at the index above
-        if self.storage[key_index] == None:
+        while node is not None and node.key != key:
+            node = node.next
+
+        if node is None:
             return None
         else:
-            return self.storage[key_index].value
+            return node.value
 
     def resize(self, new_capacity):
         """
