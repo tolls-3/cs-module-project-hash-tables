@@ -34,7 +34,7 @@ class HashTable:
             # print(self.capacity)
 
         self.storage = [None]*self.capacity
-        self.head = None
+        self.count = 0
 
     def get_num_slots(self):
         """
@@ -56,6 +56,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.count / self.capacity
 
     def fnv1(self, key):
         """
@@ -114,8 +115,12 @@ class HashTable:
         node = self.storage[key_index]
         new_value = HashTableEntry(key, value)
 
+        self.count += 1
+
         if node == None:
             self.storage[key_index] = new_value
+            if self.get_load_factor() >= 0.7:
+                self.resize(self.capacity * 2)
             return
 
         prev = node
@@ -163,12 +168,16 @@ class HashTable:
             return None
 
         else:
+            self.count -= 1
             deleted_node = node.value
             if prev is None:
                 self.storage[key_index] = node.next
 
             else:
                 prev.next = node.next
+
+            if self.get_load_factor() <= 0.2 and self.capacity // 2 >= MIN_CAPACITY:
+                self.resize(self.capacity // 2)
 
             return deleted_node
 
@@ -209,6 +218,27 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        #store a copy of old storage here
+        old_storage = self.storage
+
+        #update to the new capacity 
+        self.capacity = new_capacity
+
+        # update storage to have length with new capacity
+        self.storage = [None] * self.capacity
+
+        # run through items in old storage and send to updated storage 
+        for i in range(len(old_storage)):
+            node = old_storage[i]
+
+            if node != None:
+                current_node = node
+
+                while current_node != None:
+                    self.put(current_node.key, current_node.value)
+                    current_node = current_node.next
+
+        return
 
 
 if __name__ == "__main__":
