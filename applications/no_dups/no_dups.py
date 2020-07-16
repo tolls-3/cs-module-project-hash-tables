@@ -1,7 +1,18 @@
 def no_dups(s):
     # Your code here
-
-
+    keys = s.split()
+    storage = {}
+    string = ''
+    
+    for i, _ in enumerate(keys):
+        storage[keys[i]] = True
+    
+    for key in storage:
+        if string == '':
+            string += key
+        else:
+            string += ' ' + key
+    return string
 
 if __name__ == "__main__":
     print(no_dups(""))
