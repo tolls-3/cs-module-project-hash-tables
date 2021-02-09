@@ -2,10 +2,14 @@ class HashTableEntry:
     """
     Linked List hash table key/value pair
     """
+
     def __init__(self, key, value):
         self.key = key
         self.value = value
         self.next = None
+
+    def __str__(self):
+        print(f'{self.key}, {self.value}, {self.next}')
 
 
 # Hash table can't have fewer than this many slots
@@ -22,7 +26,15 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        if capacity < MIN_CAPACITY:
+            self.capacity = MIN_CAPACITY
+            # print(self.capacity)
+        else:
+            self.capacity = capacity
+            # print(self.capacity)
 
+        self.storage = [None]*self.capacity
+        self.count = 0
 
     def get_num_slots(self):
         """
@@ -35,7 +47,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
+        return len(self.storage)
 
     def get_load_factor(self):
         """
@@ -44,7 +56,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
+        return self.count / self.capacity
 
     def fnv1(self, key):
         """
@@ -54,7 +66,15 @@ class HashTable:
         """
 
         # Your code here
+        FNV_OFFSET_BASIS = 0xcbf29ce484222325
+        FNV_PRIME = 0x100000001b3
 
+        hash = FNV_OFFSET_BASIS
+
+        for c in key:
+            hash = hash * FNV_PRIME
+            hash = hash ^ ord(c)
+        return hash
 
     def djb2(self, key):
         """
@@ -64,14 +84,15 @@ class HashTable:
         """
         # Your code here
 
-
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        # make use of the Fowler–Noll–Vo_hash_function
+        return self.fnv1(key) % self.capacity
+
+        # return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -81,8 +102,37 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # hash the key with hash_index function
+        key_index = self.hash_index(key)
 
+        # create linked list new value
+        """
+        [None, None, None, None, None, None, None, None]
+        [3, ...., None]
+
+        """
+
+        node = self.storage[key_index]
+        new_value = HashTableEntry(key, value)
+
+        self.count += 1
+
+        if node == None:
+            self.storage[key_index] = new_value
+            if self.get_load_factor() >= 0.7:
+                self.resize(self.capacity * 2)
+            return
+
+        prev = node
+
+        while node != None:
+            if node.key == key:
+                node.value = value
+                return
+            else:
+                node = node.next
+
+        prev.next = new_value
 
     def delete(self, key):
         """
@@ -91,9 +141,45 @@ class HashTable:
         Print a warning if the key is not found.
 
         Implement this.
+
+        [None, None, None, None, None, None, None, None]
+        [3, 4, 5, ..., None]
+         |
+         56
+         |
+         43
         """
         # Your code here
 
+        # Again hash key to get index
+        key_index = self.hash_index(key)
+
+        # check if found, then delete the key and value at index above
+
+        # self.storage[key_index] = None
+        node = self.storage[key_index]
+        prev = None
+
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+
+        if node is None:
+            return None
+
+        else:
+            self.count -= 1
+            deleted_node = node.value
+            if prev is None:
+                self.storage[key_index] = node.next
+
+            else:
+                prev.next = node.next
+
+            if self.get_load_factor() <= 0.2 and self.capacity // 2 >= MIN_CAPACITY:
+                self.resize(self.capacity // 2)
+
+            return deleted_node
 
     def get(self, key):
         """
@@ -103,8 +189,26 @@ class HashTable:
 
         Implement this.
         """
+
+        """
+        [None, None, None, None, None, None, None, None]
+        [3, 4, 5, ..., None]
+
+        """
+
         # Your code here
 
+        # get the index of key by hashing the key
+        key_index = self.hash_index(key)
+        node = self.storage[key_index]
+
+        while node is not None and node.key != key:
+            node = node.next
+
+        if node is None:
+            return None
+        else:
+            return node.value
 
     def resize(self, new_capacity):
         """
@@ -114,7 +218,27 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        #store a copy of old storage here
+        old_storage = self.storage
 
+        #update to the new capacity 
+        self.capacity = new_capacity
+
+        # update storage to have length with new capacity
+        self.storage = [None] * self.capacity
+
+        # run through items in old storage and send to updated storage 
+        for i in range(len(old_storage)):
+            node = old_storage[i]
+
+            if node != None:
+                current_node = node
+
+                while current_node != None:
+                    self.put(current_node.key, current_node.value)
+                    current_node = current_node.next
+
+        return
 
 
 if __name__ == "__main__":
